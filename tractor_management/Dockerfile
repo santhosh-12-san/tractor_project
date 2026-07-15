@@ -23,5 +23,5 @@ COPY . /app/
 # Expose port
 EXPOSE 8000
 
-# Run migrations and start gunicorn server
-CMD ["sh", "-c", "python manage.py migrate && gunicorn backend.wsgi:application --bind 0.0.0.0:8000"]
+# Run migrations and start gunicorn server, waiting for PG to be ready
+CMD ["sh", "-c", "until python -c 'import os, psycopg2; psycopg2.connect(dbname=os.environ[\"DB_NAME\"], user=os.environ[\"DB_USER\"], password=os.environ[\"DB_PASSWORD\"], host=os.environ[\"DB_HOST\"], port=os.environ[\"DB_PORT\"])' 2>/dev/null; do echo 'Waiting for PostgreSQL...'; sleep 1; done; python manage.py migrate && gunicorn backend.wsgi:application --bind 0.0.0.0:8000"]
